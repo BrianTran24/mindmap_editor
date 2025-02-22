@@ -296,7 +296,7 @@ import 'line.dart';
 class MultiLineEditor extends StatefulWidget {
   final List<Line> lines;
 
-  MultiLineEditor({required this.lines, Key? key}) : super(key: key);
+  const MultiLineEditor({required this.lines, super.key});
 
   @override
   MultiLineEditorState createState() => MultiLineEditorState();

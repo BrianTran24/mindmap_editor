@@ -11,6 +11,7 @@ class RectPosition {
       this.centerLeftPosition, this.centerRightPosition);
 }
 
+
 class RectComponent extends StatefulWidget {
   final Offset initialPosition;
   final Color color;
@@ -22,14 +23,14 @@ class RectComponent extends StatefulWidget {
   RectPosition Function()? getRectPosition;
 
   RectComponent({
-    Key? key,
+    super.key,
     required this.initialPosition,
     required this.color,
     required this.onTap,
     required this.onPositionChanged,
     this.currentPosition,
     this.onRightClick,
-  }) : super(key: key);
+  });
 
   @override
   RectComponentState createState() => RectComponentState();
@@ -84,7 +85,6 @@ class RectComponentState extends State<RectComponent> {
       widget.contains  = (Offset offset) {
         return _contains(offset);
       };
-      print(_size);
     });
   }
 

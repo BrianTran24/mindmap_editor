@@ -4,7 +4,7 @@ import 'package:mindmap_editor/rect_component.dart';
 import 'comonent_type.dart';
 import 'line.dart';
 import 'line_painter.dart';
-import 'line_widget.dart'; // Import RectWidget
+
 
 class MindMapEditor extends StatefulWidget {
   const MindMapEditor({super.key});
@@ -102,9 +102,6 @@ class MindMapEditorState extends State<MindMapEditor> {
     if (_lastClickTime != null &&
         now.difference(_lastClickTime!) < Duration(milliseconds: 500)) {
       // Double-click detected
-      RenderBox box = context.findRenderObject() as RenderBox;
-      // Offset localPosition = box.globalToLocal(event.position);
-      // localPosition = Offset(localPosition.dx - 50, localPosition.dy - 25);
       var localPosition =
           Offset(event.localPosition.dx - 50, event.localPosition.dy - 25);
 
@@ -164,70 +161,70 @@ class MindMapEditorState extends State<MindMapEditor> {
     );
   }
 
-  void _handleLineTap(
-    LineWidget line,
-    Offset tapPosition,
-  ) {
-    Line? closestLine;
-    double closestDistance = double.infinity;
-
-    // Tìm đường kẻ gần nhất với vị trí click
-    for (var line in lines) {
-      final distance = _distanceToLine(tapPosition, line);
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestLine = line;
-      }
-    }
-
-    // Nếu tìm thấy đường kẻ gần nhất, hiển thị popup menu
-    if (closestLine != null) {
-      showMenu(
-        context: context,
-        position: RelativeRect.fromLTRB(
-          tapPosition.dx,
-          tapPosition.dy,
-          tapPosition.dx + 100,
-          tapPosition.dy + 100,
-        ),
-        items: [
-          PopupMenuItem(
-            child: Text('Xóa'),
-            onTap: () {
-              // Xóa đường kẻ khỏi danh sách
-              setState(() {
-                lines.removeWhere((l) => l == closestLine);
-              });
-            },
-          ),
-        ],
-      );
-    }
-  }
+  // void _handleLineTap(
+  //   LineWidget line,
+  //   Offset tapPosition,
+  // ) {
+  //   Line? closestLine;
+  //   double closestDistance = double.infinity;
+  //
+  //   // Tìm đường kẻ gần nhất với vị trí click
+  //   for (var line in lines) {
+  //     final distance = _distanceToLine(tapPosition, line);
+  //     if (distance < closestDistance) {
+  //       closestDistance = distance;
+  //       closestLine = line;
+  //     }
+  //   }
+  //
+  //   // Nếu tìm thấy đường kẻ gần nhất, hiển thị popup menu
+  //   if (closestLine != null) {
+  //     showMenu(
+  //       context: context,
+  //       position: RelativeRect.fromLTRB(
+  //         tapPosition.dx,
+  //         tapPosition.dy,
+  //         tapPosition.dx + 100,
+  //         tapPosition.dy + 100,
+  //       ),
+  //       items: [
+  //         PopupMenuItem(
+  //           child: Text('Xóa'),
+  //           onTap: () {
+  //             // Xóa đường kẻ khỏi danh sách
+  //             setState(() {
+  //               lines.removeWhere((l) => l == closestLine);
+  //             });
+  //           },
+  //         ),
+  //       ],
+  //     );
+  //   }
+  // }
 
 // Tính khoảng cách từ điểm đến đường kẻ
-  double _distanceToLine(Offset point, Line line) {
-    final start = line.start;
-    final end = line.end;
-
-    // Vector từ điểm đầu đến điểm cuối của đường kẻ
-    final lineVector = end - start;
-    // Vector từ điểm đầu đến điểm click
-    final pointVector = point - start;
-
-    // Tính toán hình chiếu của điểm click lên đường kẻ
-    final t =
-        (pointVector.dx * lineVector.dx + pointVector.dy * lineVector.dy) /
-            (lineVector.dx * lineVector.dx + lineVector.dy * lineVector.dy);
-
-    // Giới hạn t trong khoảng [0, 1] để đảm bảo hình chiếu nằm trên đoạn thẳng
-    final clampedT = t.clamp(0.0, 1.0);
-    final closestPoint =
-        start + Offset(lineVector.dx * clampedT, lineVector.dy * clampedT);
-
-    // Khoảng cách từ điểm click đến điểm gần nhất trên đường kẻ
-    return (point - closestPoint).distance;
-  }
+//   double _distanceToLine(Offset point, Line line) {
+//     final start = line.start;
+//     final end = line.end;
+//
+//     // Vector từ điểm đầu đến điểm cuối của đường kẻ
+//     final lineVector = end - start;
+//     // Vector từ điểm đầu đến điểm click
+//     final pointVector = point - start;
+//
+//     // Tính toán hình chiếu của điểm click lên đường kẻ
+//     final t =
+//         (pointVector.dx * lineVector.dx + pointVector.dy * lineVector.dy) /
+//             (lineVector.dx * lineVector.dx + lineVector.dy * lineVector.dy);
+//
+//     // Giới hạn t trong khoảng [0, 1] để đảm bảo hình chiếu nằm trên đoạn thẳng
+//     final clampedT = t.clamp(0.0, 1.0);
+//     final closestPoint =
+//         start + Offset(lineVector.dx * clampedT, lineVector.dy * clampedT);
+//
+//     // Khoảng cách từ điểm click đến điểm gần nhất trên đường kẻ
+//     return (point - closestPoint).distance;
+//   }
 }
 
 void main() {
