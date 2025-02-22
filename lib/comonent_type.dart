@@ -1,0 +1,4 @@
+enum ComponentType {
+  line,
+  rect,
+}
