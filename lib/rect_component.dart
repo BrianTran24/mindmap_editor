@@ -65,6 +65,7 @@ class RectComponentState extends State<RectComponent> {
     return renderBox.size;
   }
 
+  bool _isHovered = false;
 
   @override
   void initState() {
@@ -144,19 +145,23 @@ class RectComponentState extends State<RectComponent> {
            });
          }
         },
-        child: Container(
-          constraints: const BoxConstraints(
-            minWidth: 100,
-            minHeight: 50,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: widget.color,
-          ),
-          child:  Center(
-            child: Text(
-              text,
-              style: TextStyle(color: Colors.white),
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true), // Khi di chuột vào
+          onExit: (_) => setState(() => _isHovered = false),
+          child: Container(
+            constraints: const BoxConstraints(
+              minWidth: 100,
+              minHeight: 50,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: _isHovered ? Colors.blue[100] : widget.color,
+            ),
+            child:  Center(
+              child: Text(
+                text,
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
         ),

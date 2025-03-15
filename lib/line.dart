@@ -15,6 +15,7 @@ class Line {
     var start = startWidget.currentPosition!();
     return start;
   }
+
   Offset get end {
     var end = endWidget.currentPosition!();
     return end;
