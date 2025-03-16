@@ -5,7 +5,6 @@ import 'comonent_type.dart';
 import 'line.dart';
 import 'line_painter.dart';
 
-
 class MindMapEditor extends StatefulWidget {
   const MindMapEditor({super.key});
 
@@ -26,19 +25,32 @@ class MindMapEditorState extends State<MindMapEditor> {
 
   GlobalKey<MultiLineEditorState> painKey = GlobalKey<MultiLineEditorState>();
 
-  void _addRectWidget(Offset position) {
-    setState(() {
-      rectWidgets.add(
-        RectComponent(
-          key: UniqueKey(),
-          initialPosition: position,
-          color: Colors.blueAccent,
-          onTap: _handleWidgetTap,
-          onPositionChanged: _handleWidgetPositionChanged,
-          onRightClick: _handleWidgetRightClick,
-        ),
-      );
-    });
+  RectComponent _addRectWidget(Offset position) {
+    RectComponent rectComponent = RectComponent(
+      key: UniqueKey(),
+      initialPosition: position,
+      color: Colors.blueAccent,
+      onTap: _handleWidgetTap,
+      onPositionChanged: _handleWidgetPositionChanged,
+      onRightClick: _handleWidgetRightClick,
+      addChild: (RectComponent oldWidget) {
+        Offset newPosition = position + Offset(300, 0);
+        RectComponent newRect = _addRectWidget(newPosition);
+        Future.delayed(Duration(milliseconds: 100)).then((v){
+          var line = Line(oldWidget, newRect);
+          /// trick code xu ly lan dau
+          if (lines.isEmpty) {
+            lines.add(line);
+          }
+
+          painKey.currentState?.addLine(line);
+        });
+
+      },
+    );
+    rectWidgets.add(rectComponent);
+    setState(() {});
+    return rectComponent;
   }
 
   void _handleWidgetTap(RectComponent widget) {
@@ -72,27 +84,28 @@ class MindMapEditorState extends State<MindMapEditor> {
   @override
   void initState() {
     // TODO: implement initState
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final size = (context.findRenderObject() as RenderBox).size;
+      final center = Offset(size.width / 2, size.height / 2);
+      _addRectWidget(center);
+    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Listener(
-        onPointerDown: _handleDoubleClick,
-        child: Container(
-          color: Colors.white,
-          child: Stack(
-            children: [
-              if (lines.isNotEmpty)
-                MultiLineEditor(
-                  lines: lines,
-                  key: painKey,
-                ),
-              ...rectWidgets,
-            ],
-          ),
-        ),
+    return Container(
+      color: Colors.white,
+      child: Stack(
+        children: [
+          if (lines.isNotEmpty)
+            MultiLineEditor(
+              lines: lines,
+              key: painKey,
+            ),
+          ...rectWidgets,
+        ],
       ),
     );
   }
@@ -161,46 +174,46 @@ class MindMapEditorState extends State<MindMapEditor> {
     );
   }
 
-  // void _handleLineTap(
-  //   LineWidget line,
-  //   Offset tapPosition,
-  // ) {
-  //   Line? closestLine;
-  //   double closestDistance = double.infinity;
-  //
-  //   // Tìm đường kẻ gần nhất với vị trí click
-  //   for (var line in lines) {
-  //     final distance = _distanceToLine(tapPosition, line);
-  //     if (distance < closestDistance) {
-  //       closestDistance = distance;
-  //       closestLine = line;
-  //     }
-  //   }
-  //
-  //   // Nếu tìm thấy đường kẻ gần nhất, hiển thị popup menu
-  //   if (closestLine != null) {
-  //     showMenu(
-  //       context: context,
-  //       position: RelativeRect.fromLTRB(
-  //         tapPosition.dx,
-  //         tapPosition.dy,
-  //         tapPosition.dx + 100,
-  //         tapPosition.dy + 100,
-  //       ),
-  //       items: [
-  //         PopupMenuItem(
-  //           child: Text('Xóa'),
-  //           onTap: () {
-  //             // Xóa đường kẻ khỏi danh sách
-  //             setState(() {
-  //               lines.removeWhere((l) => l == closestLine);
-  //             });
-  //           },
-  //         ),
-  //       ],
-  //     );
-  //   }
-  // }
+// void _handleLineTap(
+//   LineWidget line,
+//   Offset tapPosition,
+// ) {
+//   Line? closestLine;
+//   double closestDistance = double.infinity;
+//
+//   // Tìm đường kẻ gần nhất với vị trí click
+//   for (var line in lines) {
+//     final distance = _distanceToLine(tapPosition, line);
+//     if (distance < closestDistance) {
+//       closestDistance = distance;
+//       closestLine = line;
+//     }
+//   }
+//
+//   // Nếu tìm thấy đường kẻ gần nhất, hiển thị popup menu
+//   if (closestLine != null) {
+//     showMenu(
+//       context: context,
+//       position: RelativeRect.fromLTRB(
+//         tapPosition.dx,
+//         tapPosition.dy,
+//         tapPosition.dx + 100,
+//         tapPosition.dy + 100,
+//       ),
+//       items: [
+//         PopupMenuItem(
+//           child: Text('Xóa'),
+//           onTap: () {
+//             // Xóa đường kẻ khỏi danh sách
+//             setState(() {
+//               lines.removeWhere((l) => l == closestLine);
+//             });
+//           },
+//         ),
+//       ],
+//     );
+//   }
+// }
 
 // Tính khoảng cách từ điểm đến đường kẻ
 //   double _distanceToLine(Offset point, Line line) {

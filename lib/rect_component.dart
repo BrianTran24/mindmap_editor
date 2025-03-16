@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mindmap_editor/component/add_note/add_note_component.dart';
 
 class RectPosition {
   final Offset targetPosition;
@@ -7,10 +8,13 @@ class RectPosition {
   final Offset centerLeftPosition;
   final Offset centerRightPosition;
 
-  RectPosition(this.targetPosition, this.centerTopPosition, this.centerBottomPosition,
-      this.centerLeftPosition, this.centerRightPosition);
+  RectPosition(
+      this.targetPosition,
+      this.centerTopPosition,
+      this.centerBottomPosition,
+      this.centerLeftPosition,
+      this.centerRightPosition);
 }
-
 
 class RectComponent extends StatefulWidget {
   final Offset initialPosition;
@@ -21,6 +25,7 @@ class RectComponent extends StatefulWidget {
   Offset Function()? currentPosition;
   bool Function(Offset offset)? contains;
   RectPosition Function()? getRectPosition;
+  final void  Function(RectComponent) addChild;
 
   RectComponent({
     super.key,
@@ -30,6 +35,7 @@ class RectComponent extends StatefulWidget {
     required this.onPositionChanged,
     this.currentPosition,
     this.onRightClick,
+    required this.addChild,
   });
 
   @override
@@ -37,7 +43,6 @@ class RectComponent extends StatefulWidget {
 }
 
 class RectComponentState extends State<RectComponent> {
-
   String text = 'Text';
   Offset _position = Offset.zero;
 
@@ -67,6 +72,34 @@ class RectComponentState extends State<RectComponent> {
 
   bool _isHovered = false;
 
+  bool _isMenuHovered = false;
+
+  OverlayEntry overlayEntry(double x, double y) => OverlayEntry(
+    builder: (context) => Positioned(
+      top: y, // Vị trí top
+      left: x,  // Vị trí left
+      child: MouseRegion(
+        onEnter: (_) {
+          setState(() {
+            _isMenuHovered = true;
+          });
+        },
+        onExit: (_) {
+          setState(() {
+            _isMenuHovered = false;
+          });
+          _removeOverlay();
+        },
+        child: Material(
+          color: Colors.transparent,
+          child: AddNoteComponent(voidCallback: ()=>widget.addChild.call(widget),)
+        ),
+      ),
+    ),
+  );
+
+  OverlayEntry? _overlayEntry;
+
   @override
   void initState() {
     super.initState();
@@ -83,12 +116,11 @@ class RectComponentState extends State<RectComponent> {
       );
       widget.getRectPosition = () => rectPosition;
 
-      widget.contains  = (Offset offset) {
+      widget.contains = (Offset offset) {
         return _contains(offset);
       };
     });
   }
-
 
   @override
   void didUpdateWidget(covariant RectComponent oldWidget) {
@@ -110,6 +142,7 @@ class RectComponentState extends State<RectComponent> {
         offset.dy >= _position.dy &&
         offset.dy <= _position.dy + _size.height;
   }
+
   @override
   Widget build(BuildContext context) {
     return Positioned(
@@ -130,34 +163,49 @@ class RectComponentState extends State<RectComponent> {
           );
           widget.getRectPosition = () => rectPosition;
           widget.onPositionChanged(this.widget, _position);
-          widget.contains  = (Offset offset) {
+          widget.contains = (Offset offset) {
             return _contains(offset);
           };
         },
         onSecondaryTap: () {
           widget.onRightClick?.call(widget);
         },
-        onDoubleTap: () async{
-         var result = await _showTextInputDialog(context);
-         if(result is String){
-           setState(() {
-             text = result;
-           });
-         }
+        onDoubleTap: () async {
+          var result = await _showTextInputDialog(context);
+          if (result is String) {
+            setState(() {
+              text = result;
+            });
+          }
         },
         child: MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true), // Khi di chuột vào
-          onExit: (_) => setState(() => _isHovered = false),
+          hitTestBehavior: HitTestBehavior.translucent,
+          onEnter: (event) {
+            setState(() {
+              _isHovered = true;
+            });
+
+            _overlayEntry = overlayEntry(event.position.dx , event.position.dy-_size.height/2);
+            Overlay.of(context).insert(_overlayEntry!);
+          },
+          // Khi di chuột vào
+          onExit: (event) {
+            setState(() {
+              _isHovered = false;
+            });
+            _removeOverlay();
+          },
           child: Container(
             constraints: const BoxConstraints(
               minWidth: 100,
               minHeight: 50,
             ),
+
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: _isHovered ? Colors.blue[100] : widget.color,
             ),
-            child:  Center(
+            child: Center(
               child: Text(
                 text,
                 style: TextStyle(color: Colors.white),
@@ -169,8 +217,8 @@ class RectComponentState extends State<RectComponent> {
     );
   }
 
-  Future<String?> _showTextInputDialog(BuildContext context) async{
-   return await showDialog(
+  Future<String?> _showTextInputDialog(BuildContext context) async {
+    return await showDialog(
       context: context,
       builder: (BuildContext context) {
         TextEditingController textEditingController = TextEditingController();
@@ -202,4 +250,10 @@ class RectComponentState extends State<RectComponent> {
     );
   }
 
+  void _removeOverlay() {
+    if (!_isMenuHovered && !_isHovered) {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+    }
+  }
 }
